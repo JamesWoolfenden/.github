@@ -26,7 +26,9 @@ jobs:
       matrix:
         dir: ${{ fromJson(needs.discover.outputs.dirs) }}
     steps:
-      - uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
+      - uses: opentofu/setup-opentofu@ae26a56c6e9bc8f2a79a9a9d28e5d71eb3c7e9f0 # v1.0.5
+        with:
+          tofu_wrapper: false
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: '0'
@@ -34,24 +36,24 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::680235478471:role/github-actions-terraform
           aws-region: us-east-1
-      - name: Config Terraform plugin cache
+      - name: Config OpenTofu plugin cache
         run: |
-          echo "plugin_cache_dir=$HOME/.terraform.d/plugin-cache" >~/.terraformrc
+          echo "plugin_cache_dir=$HOME/.terraform.d/plugin-cache" >~/.tofurc
           mkdir --parents ~/.terraform.d/plugin-cache
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.terraform.d/plugin-cache
-          key: ${{ runner.os }}-terraform-${{ hashFiles('**/.terraform.lock.hcl') }}
+          key: ${{ runner.os }}-opentofu-${{ hashFiles('**/.terraform.lock.hcl') }}
           restore-keys: |
-            ${{ runner.os }}-terraform-
-      - name: Terraform Init
-        run: terraform init
+            ${{ runner.os }}-opentofu-
+      - name: OpenTofu Init
+        run: tofu init
         working-directory: ${{ matrix.dir }}
-      - name: Terraform Validate
-        run: terraform validate
+      - name: OpenTofu Validate
+        run: tofu validate
         working-directory: ${{ matrix.dir }}
-      - name: Terraform Plan
-        run: terraform plan
+      - name: OpenTofu Plan
+        run: tofu plan
         working-directory: ${{ matrix.dir }}
 
   security:
