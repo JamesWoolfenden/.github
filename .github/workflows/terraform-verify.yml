@@ -26,7 +26,7 @@ jobs:
       matrix:
         dir: ${{ fromJson(needs.discover.outputs.dirs) }}
     steps:
-      - uses: opentofu/setup-opentofu@ae26a56c6e9bc8f2a79a9a9d28e5d71eb3c7e9f0 # v1.0.5
+      - uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb # v2.0.0
         with:
           tofu_wrapper: false
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -65,7 +65,7 @@ jobs:
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: 3.11
-      - uses: opentofu/setup-opentofu@ae26a56c6e9bc8f2a79a9a9d28e5d71eb3c7e9f0 # v1.0.5
+      - uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb # v2.0.0
         with:
           tofu_wrapper: false
       - name: Symlink tofu as terraform
