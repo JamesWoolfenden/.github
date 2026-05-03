@@ -38,7 +38,7 @@ jobs:
           aws-region: us-east-1
       - name: Config OpenTofu plugin cache
         run: |
-          echo "plugin_cache_dir=$HOME/.terraform.d/plugin-cache" >~/.tofurc
+          echo "plugin_cache_dir = \"$HOME/.terraform.d/plugin-cache\"" >~/.tofurc
           mkdir --parents ~/.terraform.d/plugin-cache
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
