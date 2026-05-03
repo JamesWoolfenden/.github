@@ -63,6 +63,8 @@ jobs:
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: 3.11
+      - name: Symlink tofu as terraform
+        run: sudo ln -sf "$(which tofu)" /usr/local/bin/terraform
       - run: |
           pip3 install lastversion
           lastversion terraform-docs --assets -d --verbose
