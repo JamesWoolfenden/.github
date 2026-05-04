@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - id: find
         run: |
-          dirs=$(find example -maxdepth 1 -mindepth 1 -type d | sort | jq -R -s -c 'split("\n")[:-1]')
+          dirs=$(find example -maxdepth 1 -mindepth 1 -type d ! -name "*.*" ! -name "example-fail" ! -name "*-drift" | sort | jq -R -s -c 'split("\n")[:-1]')
           echo "dirs=$dirs" >> $GITHUB_OUTPUT
 
   terraform:
