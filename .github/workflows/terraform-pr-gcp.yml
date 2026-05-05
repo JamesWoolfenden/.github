@@ -1,0 +1,79 @@
+---
+# yamllint disable rule:line-length
+name: Terraform Pull Request GCP
+on:
+  workflow_call:
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      dirs: ${{ steps.find.outputs.dirs }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: find
+        run: |
+          dirs=$(find example -maxdepth 1 -mindepth 1 -type d ! -name "*.*" ! -name "example-fail" ! -name "*-drift" | sort | jq -R -s -c 'split("\n")[:-1]')
+          echo "dirs=$dirs" >> $GITHUB_OUTPUT
+
+  terraform:
+    needs: discover
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      matrix:
+        dir: ${{ fromJson(needs.discover.outputs.dirs) }}
+    steps:
+      - uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb # v2.0.0
+        with:
+          tofu_wrapper: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: '0'
+      - uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13
+        with:
+          workload_identity_provider: projects/430943803039/locations/global/workloadIdentityPools/github-actions/providers/github-oidc
+          service_account: github-actions-terraform@pike-477416.iam.gserviceaccount.com
+      - name: Config OpenTofu plugin cache
+        run: |
+          echo "plugin_cache_dir = \"$HOME/.terraform.d/plugin-cache\"" >~/.tofurc
+          mkdir --parents ~/.terraform.d/plugin-cache
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.terraform.d/plugin-cache
+          key: ${{ runner.os }}-opentofu-${{ hashFiles('**/.terraform.lock.hcl') }}
+          restore-keys: |
+            ${{ runner.os }}-opentofu-
+      - name: OpenTofu Init
+        run: tofu init
+        working-directory: ${{ matrix.dir }}
+      - name: OpenTofu Validate
+        run: tofu validate
+        working-directory: ${{ matrix.dir }}
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: '0'
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: 3.11
+      - uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb # v2.0.0
+        with:
+          tofu_wrapper: false
+      - name: Symlink tofu as terraform
+        run: sudo ln -sf "$(which tofu)" /usr/local/bin/terraform
+      - run: |
+          mkdir "$GITHUB_WORKSPACE/bin"
+          curl -sSLo terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v0.22.0/terraform-docs-v0.22.0-linux-amd64.tar.gz
+          tar -xvf terraform-docs.tar.gz --directory "$GITHUB_WORKSPACE/bin"
+          chmod +x "$GITHUB_WORKSPACE/bin/terraform-docs"
+          curl -sSLo actionlint.tar.gz https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          tar -xvf actionlint.tar.gz --directory "$GITHUB_WORKSPACE/bin"
+          chmod +x "$GITHUB_WORKSPACE/bin/actionlint"
+          echo "$GITHUB_WORKSPACE/bin" >> "$GITHUB_PATH"
+      - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
