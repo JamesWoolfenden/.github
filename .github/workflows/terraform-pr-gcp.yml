@@ -67,4 +67,7 @@ jobs:
           tofu_wrapper: false
       - name: Symlink tofu as terraform
         run: sudo ln -sf "$(which tofu)" /usr/local/bin/terraform
-      - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
+      - name: Install pre-commit
+        run: pip install pre-commit
+      - name: Run pre-commit
+        run: pre-commit run --show-diff-on-failure --color=always --all-files
