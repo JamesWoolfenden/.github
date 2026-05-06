@@ -71,7 +71,7 @@ jobs:
       - name: Symlink tofu as terraform
         run: sudo ln -sf "$(which tofu)" /usr/local/bin/terraform
       - name: Install pre-commit
-        run: pip install pre-commit
+        run: pip install pre-commit==4.6.0
       - name: Run pre-commit
         run: pre-commit run --show-diff-on-failure --color=always --all-files
 
