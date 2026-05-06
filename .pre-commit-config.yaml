@@ -1,0 +1,10 @@
+---
+# yamllint disable rule:line-length
+default_language_version:
+  python: python3.11
+repos:
+  - repo: https://github.com/jameswoolfenden/ghat
+    rev: a386050ae690ce55f567aaf177fa0516427f014a # v0.1.28
+    hooks:
+      - id: ghat-go
+      - id: ghat-go-sift
