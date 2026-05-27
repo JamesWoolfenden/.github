@@ -3,6 +3,23 @@
 name: Terraform Pull Request GCP
 on:
   workflow_call:
+    inputs:
+      service_account:
+        description: >
+          GCP service account email to authenticate as via WIF.
+          Override with a repo-specific SA for least-privilege access.
+          Defaults to the shared bootstrap SA; migrate each repo to its own SA
+          by passing this input — see docs/best-practice-auth-gcp.md in holden.
+        type: string
+        required: false
+        default: github-actions-terraform@pike-477416.iam.gserviceaccount.com
+      workload_identity_provider:
+        description: >
+          WIF provider resource name. Defaults to the shared provider; only
+          override if you move to a separate WIF pool per environment.
+        type: string
+        required: false
+        default: projects/430943803039/locations/global/workloadIdentityPools/github-actions/providers/github-oidc
 
 jobs:
   discover:
@@ -34,8 +51,8 @@ jobs:
           fetch-depth: '0'
       - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
         with:
-          workload_identity_provider: projects/430943803039/locations/global/workloadIdentityPools/github-actions/providers/github-oidc
-          service_account: github-actions-terraform@pike-477416.iam.gserviceaccount.com
+          workload_identity_provider: ${{ inputs.workload_identity_provider }}
+          service_account: ${{ inputs.service_account }}
       - name: Config OpenTofu plugin cache
         run: |
           echo "plugin_cache_dir = \"$HOME/.terraform.d/plugin-cache\"" >~/.tofurc
